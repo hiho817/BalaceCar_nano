@@ -229,11 +229,11 @@ void pid_balance()
   // Calculate motor speed using PID controller
   pid_pitch = kp_balance * error + ki_balance * integral + kd_balance * derivative;
 
-  pid_pitch = constrain(pid_pitch , 0 , 1.0);
+  pid_pitch = constrain(pid_pitch , 0.0 , 1.0);
 }
 
 void controlMotor(){
-  pid_pitch = map(pid_pitch , 0 , 1 , -maxspeed , maxspeed);
+  pid_pitch = map(pid_pitch , 0.0 , 1.0 , -maxspeed , maxspeed);
   stepper_R.setSpeed(-pid_pitch);
   stepper_L.setSpeed(pid_pitch);
 }
@@ -265,7 +265,7 @@ void loop()
 {
 
   unsigned long currentTime = millis();
-  elapsedTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
+  elapsedTime = (currentTime - previousTime) / 1000.0;
   previousTime = currentTime;
 
   updateIMU();
