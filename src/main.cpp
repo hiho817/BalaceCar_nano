@@ -45,6 +45,7 @@ const long maxspeed = 1000;
 
 unsigned long previousTime = 0;
 float elapsedTime = 0;
+unsigned long currentTime = 0;
 
 float setPoint = 0;      // Desired angle (upright position)
 float kp_balance = 0.05;  // Proportional gain
@@ -266,12 +267,13 @@ void setup()
 void loop()
 {
 
-  unsigned long currentTime = millis();
+  currentTime = millis();
   elapsedTime = (currentTime - previousTime) / 1000.0;
-  previousTime = currentTime;
-
-  updateIMU();
-  pid_balance();
+  if(elapsedTime >= 0.1){
+    previousTime = currentTime;
+    updateIMU();
+    pid_balance();
+  }
 
   // actuator
   controlMotor();
