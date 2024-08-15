@@ -19,25 +19,28 @@
 //          ||VIN              TX||BT_RX
 
 
+// define some variables
+String command;
+
 bool initIMU(){
-
 }
-bool initBT(){
 
+bool initBT(){
+  Serial.begin(38400); // Default communication rate of the Bluetooth module
+  Serial.println("intialize BlueTooth sucessful");
 }
 
 
 
 void setup() {
-  Serial.begin(115200);
-  if(!initIMU()){
-    Serial.println("intialize IMU sucessful");
-  }
-  if(!initBT()){
-    Serial.println("intialize BlueTooth sucessful");
-  }
-
+  initBT();
+  initIMU();
 }
 
 void loop() {
+  if(Serial.available() > 0){ // Checks whether data is comming from the serial port
+    command = Serial.read(); // Reads the data from the serial port
+    //Serial.println(command);
+  }
+  
 }
