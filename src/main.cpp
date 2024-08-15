@@ -189,7 +189,7 @@ bool initBT()
 void updateIMU()
 {
   // Get new sensor events
-  float alpha = 0.4;
+  float alpha = 0.6;
   sensors_event_t accel, gyro, temp;
   mpu.getEvent(&accel, &gyro, &temp);
 
