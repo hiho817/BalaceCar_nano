@@ -13,7 +13,7 @@
 //          ||A2               D7||DIR_L
 //          ||A3               D6||STEP_R
 //   IMU_SDA||A4               D5||STEP_L
-//   IMU_SCL||A5               D4||EN
+//   IMU_SCL||A5               D4||STEP_EN
 //          ||A6               D3||
 //          ||A7               D2||
 //          ||5V              GND||
@@ -21,28 +21,35 @@
 //          ||GND              RX||BT_TX
 //          ||VIN              TX||BT_RX
 
+#define STEP_R 6
+#define STEP_L 5
+#define DIR_R 8
+#define DIR_L 7
+#define motorInterfaceType 1
+AccelStepper stepper_R = AccelStepper(motorInterfaceType, STEP_R, DIR_R);
+AccelStepper stepper_L = AccelStepper(motorInterfaceType, STEP_L, DIR_L);
 // define some variables
 String command;
 Adafruit_MPU6050 mpu;
-volatile float accAngle, currentAngle, prevAngle = 0, error, prevError = 0, errorSum = 0;
 float pitch = 0;
 float roll = 0;
 float yaw = 0;
 float pitch_prev = 0;
 float roll_prev = 0;
+float yaw_prev = 0;
+
 float accelOffset[3] = {0, 0, 0}; // X, Y, Z offsets for accelerometer
 float gyroOffset[3] = {0, 0, 0};  // X, Y, Z offsets for gyroscope
+
+const long maxspeed = 1000;
+
 unsigned long previousTime = 0;
 float elapsedTime = 0;
-#define stepPin1 5
-#define dirPin1 7
-#define stepPin2 6
-#define dirPin2 8
 
 float setPoint = 0;      // Desired angle (upright position)
-float kp_balance = 5.0;  // Proportional gain
-float ki_balance = 0.0;  // Integral gain
-float kd_balance = 0.01; // Derivative gain
+float kp_balance = 0.05;  // Proportional gain
+float ki_balance = 0.01;  // Integral gain
+float kd_balance = 0.0001; // Derivative gain
 
 float pid_pitch = 0 ;
 
@@ -50,15 +57,10 @@ float error_prev = 0;       // Store the previous error for derivative calculati
 float integral = 0;         // Store the cumulative error for integral calculation
 unsigned long lastTime = 0; // Store the last time for derivative calculation
 
-AccelStepper stepper1(AccelStepper::DRIVER, stepPin1, dirPin1);
-AccelStepper stepper2(AccelStepper::DRIVER, stepPin2, dirPin2);
 
-void initmotor()
-{
-  stepper1.setMaxSpeed(1000);    // Set max speed for motor 1
-  stepper2.setMaxSpeed(1000);    // Set max speed for motor 2
-  stepper1.setAcceleration(500); // Set acceleration for motor 1
-  stepper2.setAcceleration(500); // Set acceleration for motor 2
+void initmotor(){
+  stepper_R.setMaxSpeed(maxspeed);
+  stepper_L.setMaxSpeed(maxspeed);
 }
 
 void calibrateMPU6050()
@@ -227,10 +229,16 @@ void pid_balance()
   // Calculate motor speed using PID controller
   pid_pitch = kp_balance * error + ki_balance * integral + kd_balance * derivative;
 
-  pid_pitch = constrain(pid_pitch , -1000 , 1000);
+  pid_pitch = constrain(pid_pitch , 0 , 1.0);
 }
 
-void printMPUdata()
+void controlMotor(){
+  pid_pitch = map(pid_pitch , 0 , 1 , -maxspeed , maxspeed);
+  stepper_R.setSpeed(-pid_pitch);
+  stepper_L.setSpeed(pid_pitch);
+}
+
+void printIMUdata()
 {
   // print_counter = micros();
   Serial.print(F(">Pitch:"));
@@ -264,16 +272,13 @@ void loop()
   pid_balance();
 
   // actuator
-
-  stepper1.setSpeed(stepper1.maxSpeed());
-  stepper2.setSpeed(-pid_pitch);
-  stepper1.runSpeed();
-  stepper2.runSpeed();
-
-  printMPUdata();
+  controlMotor();
+  //debug
+  printIMUdata();
   printPIDgain();
-  // if(Serial.available() > 0){ // Checks whether data is comming from the serial port
-  //   command = Serial.read(); // Reads the data from the serial port
-  //   //Serial.println(command);
+
+  // if(Serial.available() > 0){ 
+  //   command = Serial.read();
+  //   Serial.println(command);
   // }
 }
