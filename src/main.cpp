@@ -24,14 +24,16 @@
 // define some variables
 String command;
 Adafruit_MPU6050 mpu;
-volatile int motorPower;
 volatile float accAngle, currentAngle, prevAngle = 0, error, prevError = 0, errorSum = 0;
 float pitch = 0;
 float roll = 0;
 float yaw = 0;
+float pitch_prev = 0;
+float roll_prev = 0;
 float accelOffset[3] = {0, 0, 0}; // X, Y, Z offsets for accelerometer
 float gyroOffset[3] = {0, 0, 0};  // X, Y, Z offsets for gyroscope
 unsigned long previousTime = 0;
+float elapsedTime = 0;
 
 void calibrateMPU6050() {
   const int sampleSize = 1000;
@@ -113,17 +115,13 @@ bool initIMU(){
 }
 
 bool initBT(){
-  Serial.begin(38400); // Default communication rate of the Bluetooth module
+  Serial.begin(115200); // Default communication rate of the Bluetooth module
   Serial.println("intialize BlueTooth sucessful");
 }
 
 void updateIMU(){
-    // Calculate elapsed time
-    unsigned long currentTime = millis();
-    float elapsedTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
-    previousTime = currentTime;
-
     // Get new sensor events
+    float alpha = 0.6 ; 
     sensors_event_t accel, gyro, temp;
     mpu.getEvent(&accel, &gyro, &temp);
 
@@ -136,12 +134,14 @@ void updateIMU(){
     gyro.gyro.z -= gyroOffset[2];
 
     // Calculate pitch and roll using accelerometer data
-    float accelPitch = atan2(accel.acceleration.x, sqrt(sq(accel.acceleration.y) + sq(accel.acceleration.z))) * 180.0 / PI;
-    float accelRoll = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z))) * 180.0 / PI;
+    float pitch_IMU = atan2(accel.acceleration.x, sqrt(sq(accel.acceleration.y) + sq(accel.acceleration.z))) * 180.0 / PI;
+    float roll_IMU = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z))) * 180.0 / PI;
 
-    pitch = accelPitch;
-    roll = accelRoll;
 
+    pitch = alpha * pitch_IMU + (1 - alpha) * pitch_prev ;
+    roll =  alpha * roll_IMU + (1 - alpha) * roll_prev ;
+    pitch_prev = pitch_IMU;
+    roll_prev = roll_IMU;
     // Update yaw using gyroscope data
     yaw += gyro.gyro.z * elapsedTime;
 }
@@ -162,10 +162,18 @@ void setup() {
 }
 
 void loop() {
-    updateIMU();
-    printMPUdata();
-    if(Serial.available() > 0){ // Checks whether data is comming from the serial port
+
+  unsigned long currentTime = millis();
+  elapsedTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
+  previousTime = currentTime;
+
+  updateIMU();
+
+  printMPUdata();
+
+  if(Serial.available() > 0){ // Checks whether data is comming from the serial port
     command = Serial.read(); // Reads the data from the serial port
     //Serial.println(command);
-    }
+  }
+  
 }
