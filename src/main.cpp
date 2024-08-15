@@ -236,6 +236,8 @@ void controlMotor(){
   pid_pitch = map(pid_pitch , 0.0 , 1.0 , -maxspeed , maxspeed);
   stepper_R.setSpeed(-pid_pitch);
   stepper_L.setSpeed(pid_pitch);
+  stepper_R.runSpeed();
+  stepper_L.runSpeed();
 }
 
 void printIMUdata()
