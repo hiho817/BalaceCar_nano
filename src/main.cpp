@@ -11,6 +11,13 @@ AccelStepper stepper_L = AccelStepper(motorInterfaceType, STEP_L, DIR_L);
 String command;
 Adafruit_MPU6050 mpu;
 
+void blink() {
+    digitalWrite(Debug_LED, HIGH);
+    delay(100);
+    digitalWrite(Debug_LED, LOW);
+    delay(100);
+}
+
 void initmotor() {
     // Set up the motor pins
     pinMode(STEP_EN, OUTPUT);    // Enable pin for stepper motor driver
@@ -125,6 +132,7 @@ bool initIMU() {
     calibrateMPU6050();
     Serial.println("Calibration done!");
 
+    blink();
     return true;
 }
 
@@ -201,6 +209,7 @@ void printPIDgain() {
 }
 
 void setup() {
+    pinMode(Debug_LED, OUTPUT);
     initBT();
     initmotor();
     initIMU();
@@ -217,9 +226,12 @@ void loop() {
 
     // actuator
     controlMotor();
+
     // debug
+#ifdef DEBUG
     printIMUdata();
     printPIDgain();
+#endif
 
     // if(Serial.available() > 0){
     //   command = Serial.read();

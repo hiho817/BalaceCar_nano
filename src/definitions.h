@@ -24,8 +24,9 @@
 #define motorInterfaceType 1
 #define Debug_LED 13 // Debug LED on nano board
 
-// define some variables
+#define DEBUG // Enable debug mode for serial output command it out to disable
 
+// define some variables
 float pitch = 0;
 float roll = 0;
 float yaw = 0;
