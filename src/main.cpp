@@ -182,13 +182,27 @@ void pid_balance() {
     // Calculate motor speed using PID controller
     pid_pitch = kp_balance * error + ki_balance * integral + kd_balance * derivative;
 
-    pid_pitch = constrain(pid_pitch, 0.0, 1.0);
+    pid_pitch = constrain(pid_pitch, -1.0, 1.0);
+
+#ifdef DEBUG
+    Serial.print(F(">error:"));
+    Serial.println(error);
+    Serial.print(F(">integral:"));
+    Serial.println(integral);
+    Serial.print(F(">derivative:"));
+    Serial.println(derivative);
+#endif
+
 }
 
 void controlMotor() {
-    pid_pitch = map(pid_pitch, 0.0, 1.0, -maxspeed, maxspeed);
-    stepper_R.setSpeed(-pid_pitch);
-    stepper_L.setSpeed(pid_pitch);
+    float speed_pid = pitch * maxspeed;
+    #ifdef DEBUG
+    Serial.print(F(">speed_pid:"));
+    Serial.println(speed_pid);
+    #endif
+    stepper_R.setSpeed(-speed_pid);
+    stepper_L.setSpeed(speed_pid);
     stepper_R.runSpeed();
     stepper_L.runSpeed();
 }
@@ -206,6 +220,19 @@ void printIMUdata() {
 void printPIDgain() {
     Serial.print(F(">pid:"));
     Serial.println(pid_pitch);
+}
+
+void print_setting(){
+    Serial.print(F("kp_balance:\t"));
+    Serial.println(kp_balance);
+    Serial.print(F("ki_balance:\t"));
+    Serial.println(ki_balance);
+    Serial.print(F("kd_balance:\t"));
+    Serial.println(kd_balance);
+    Serial.print(F("maxspeed:\t"));
+    Serial.println(maxspeed);
+    Serial.print(F("setPoint:\t"));
+    Serial.println(setPoint);
 }
 
 void setup() {
@@ -231,6 +258,7 @@ void loop() {
 #ifdef DEBUG
     printIMUdata();
     printPIDgain();
+    print_setting();
 #endif
 
     // if(Serial.available() > 0){
