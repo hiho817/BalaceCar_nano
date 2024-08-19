@@ -38,7 +38,7 @@ float yaw_prev = 0;
 float accelOffset[3] = {0, 0, 0}; // X, Y, Z offsets for accelerometer
 float gyroOffset[3] = {0, 0, 0};  // X, Y, Z offsets for gyroscope
 
-float maxspeed = 1000.0;
+float maxspeed = 10000.0;
 
 unsigned long previousTime = 0;
 float elapsedTime = 0;

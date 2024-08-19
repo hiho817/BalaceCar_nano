@@ -22,6 +22,8 @@ void initmotor() {
     // Set up the motor pins
     pinMode(STEP_EN, OUTPUT);    // Enable pin for stepper motor driver
     digitalWrite(STEP_EN, LOW);  // Disable the driver
+    stepper_L.setAcceleration(1000);
+    stepper_R.setAcceleration(1000);
     stepper_R.setMaxSpeed(maxspeed);
     stepper_L.setMaxSpeed(maxspeed);
 }
@@ -132,7 +134,10 @@ bool initIMU() {
     calibrateMPU6050();
     Serial.println("Calibration done!");
 
-    blink();
+    for (int i = 0; i < 3; i++) {
+        blink();
+    }
+    digitalWrite(Debug_LED, HIGH);
     return true;
 }
 
@@ -196,7 +201,7 @@ void pid_balance() {
 }
 
 void controlMotor() {
-    float speed_pid = pitch * maxspeed;
+    float speed_pid = pid_pitch * maxspeed;
     #ifdef DEBUG
     Serial.print(F(">speed_pid:"));
     Serial.println(speed_pid);
@@ -237,6 +242,7 @@ void print_setting(){
 
 void setup() {
     pinMode(Debug_LED, OUTPUT);
+    digitalWrite(Debug_LED, LOW);
     initBT();
     initmotor();
     initIMU();
@@ -244,8 +250,12 @@ void setup() {
 
 void loop() {
     currentTime = millis();
+    #ifdef DEBUG
+    Serial.print(F(">loopTime:"));
+    Serial.println(currentTime-previousTime);
+    #endif
     elapsedTime = (currentTime - previousTime) / 1000.0;
-    if (elapsedTime >= 0.1) {
+    if (elapsedTime >= 0.05) {
         previousTime = currentTime;
         updateIMU();
         pid_balance();
