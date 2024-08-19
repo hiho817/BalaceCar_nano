@@ -22,8 +22,10 @@ void initmotor() {
     // Set up the motor pins
     pinMode(STEP_EN, OUTPUT);    // Enable pin for stepper motor driver
     digitalWrite(STEP_EN, LOW);  // Disable the driver
-    stepper_L.setAcceleration(1000);
-    stepper_R.setAcceleration(1000);
+    stepper_L.setCurrentPosition(0);
+    stepper_R.setCurrentPosition(0);
+    // stepper_L.setAcceleration(10000);
+    // stepper_R.setAcceleration(10000);
     stepper_R.setMaxSpeed(maxspeed);
     stepper_L.setMaxSpeed(maxspeed);
 }
@@ -250,29 +252,45 @@ void setup() {
 
 void loop() {
     currentTime = millis();
-    #ifdef DEBUG
-    Serial.print(F(">loopTime:"));
-    Serial.println(currentTime-previousTime);
-    #endif
+    
     elapsedTime = (currentTime - previousTime) / 1000.0;
-    if (elapsedTime >= 0.05) {
+    if (elapsedTime >= elapsedTime_settling) {
         previousTime = currentTime;
         updateIMU();
+        controlMotor();
         pid_balance();
-    }
-
-    // actuator
-    controlMotor();
-
-    // debug
+        controlMotor();
+        // print datas
 #ifdef DEBUG
     printIMUdata();
     printPIDgain();
     print_setting();
 #endif
+    }
+    
+    if (Serial.available() > 0) {
+        command = Serial.readStringUntil('\n');
+        if (command.startsWith("kp")) {
+            kp_balance = command.substring(3).toFloat();
+        } else if (command.startsWith("ki")) {
+            ki_balance = command.substring(3).toFloat();
+        } else if (command.startsWith("kd")) {
+            kd_balance = command.substring(3).toFloat();
+        } else if (command.startsWith("maxspeed")) {
+            maxspeed = command.substring(8).toFloat();
+        } else if (command.startsWith("setPoint")) {
+            setPoint = command.substring(8).toFloat();
+        } else if (command.startsWith("time")) {
+            elapsedTime_settling = command.substring(5).toFloat();
+        }
+    }
+    // actuator
+    controlMotor();
 
-    // if(Serial.available() > 0){
-    //   command = Serial.read();
-    //   Serial.println(command);
-    // }
+    // debug
+    #ifdef DEBUG
+    int loopTime = millis() - currentTime;
+    Serial.print(F(">loopTime:"));
+    Serial.println(loopTime);
+    #endif
 }

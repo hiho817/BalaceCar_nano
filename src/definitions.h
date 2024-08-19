@@ -24,7 +24,7 @@
 #define motorInterfaceType 1
 #define Debug_LED 13 // Debug LED on nano board
 
-#define DEBUG // Enable debug mode for serial output command it out to disable
+// #define DEBUG // Enable debug mode for serial output command it out to disable
 
 // define some variables
 float pitch = 0;
@@ -38,16 +38,17 @@ float yaw_prev = 0;
 float accelOffset[3] = {0, 0, 0}; // X, Y, Z offsets for accelerometer
 float gyroOffset[3] = {0, 0, 0};  // X, Y, Z offsets for gyroscope
 
-float maxspeed = 10000.0;
+float elapsedTime_settling = 0.05;
+float maxspeed = 5000.0;
 
 unsigned long previousTime = 0;
 float elapsedTime = 0;
 unsigned long currentTime = 0;
 
 float setPoint = 0;      // Desired angle (upright position)
-float kp_balance = 0.05;  // Proportional gain
-float ki_balance = 0.01;  // Integral gain
-float kd_balance = 0.0001; // Derivative gain
+float kp_balance = 0.03;  // Proportional gain
+float ki_balance = 0.00;  // Integral gain
+float kd_balance = 0.00; // Derivative gain
 
 float pid_pitch = 0 ;
 
