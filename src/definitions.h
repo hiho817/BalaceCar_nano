@@ -55,3 +55,5 @@ float pid_pitch = 0 ;
 float error_prev = 0;       // Store the previous error for derivative calculation
 float integral = 0;         // Store the cumulative error for integral calculation
 unsigned long lastTime = 0; // Store the last time for derivative calculation
+
+float speed_pid = 0;

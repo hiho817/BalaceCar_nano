@@ -204,13 +204,15 @@ void pid_balance() {
 }
 
 void controlMotor() {
-    float speed_pid = pid_pitch * maxspeed;
+    if (speed_pid != pid_pitch * maxspeed){
+        speed_pid = pid_pitch * maxspeed;
+        stepper_R.setSpeed(-speed_pid);
+        stepper_L.setSpeed(speed_pid);        
+    }
     #ifdef DEBUG
     Serial.print(F(">speed_pid:"));
     Serial.println(speed_pid);
     #endif
-    stepper_R.setSpeed(-speed_pid);
-    stepper_L.setSpeed(speed_pid);
     stepper_R.runSpeed();
     stepper_L.runSpeed();
 }
