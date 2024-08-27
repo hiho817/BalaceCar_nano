@@ -163,15 +163,16 @@ void updateIMU() {
     gyro.gyro.z -= gyroOffset[2];
 
     // Calculate pitch and roll using accelerometer data
+
     float pitch_IMU = atan2(accel.acceleration.x, sqrt(sq(accel.acceleration.y) + sq(accel.acceleration.z)));
-    float roll_IMU = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z)));
+    // float roll_IMU = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z)));
 
     pitch = alpha * pitch_IMU + (1 - alpha) * pitch_prev;
-    roll = alpha * roll_IMU + (1 - alpha) * roll_prev;
+    // roll = alpha * roll_IMU + (1 - alpha) * roll_prev;
     pitch_prev = pitch_IMU;
-    roll_prev = roll_IMU;
+    // roll_prev = roll_IMU;
     // Update yaw using gyroscope data
-    yaw += gyro.gyro.z * elapsedTime;
+    // yaw += gyro.gyro.z * elapsedTime;
 }
 
 void pid_balance() {
@@ -261,6 +262,7 @@ void loop() {
         pid_balance();
         controlMotor();
         // print datas
+        
 #ifdef DEBUG
     printIMUdata();
     printPIDgain();
