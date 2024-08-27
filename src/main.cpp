@@ -163,8 +163,8 @@ void updateIMU() {
     gyro.gyro.z -= gyroOffset[2];
 
     // Calculate pitch and roll using accelerometer data
-    float pitch_IMU = atan2(accel.acceleration.x, sqrt(sq(accel.acceleration.y) + sq(accel.acceleration.z))) * 180.0 / PI;
-    float roll_IMU = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z))) * 180.0 / PI;
+    float pitch_IMU = atan2(accel.acceleration.x, sqrt(sq(accel.acceleration.y) + sq(accel.acceleration.z)));
+    float roll_IMU = atan2(-accel.acceleration.y, sqrt(sq(accel.acceleration.x) + sq(accel.acceleration.z)));
 
     pitch = alpha * pitch_IMU + (1 - alpha) * pitch_prev;
     roll = alpha * roll_IMU + (1 - alpha) * roll_prev;
@@ -187,7 +187,7 @@ void pid_balance() {
     error_prev = error;
 
     // Calculate motor speed using PID controller
-    pid_pitch = kp_balance * error + ki_balance * integral + kd_balance * derivative;
+    pid_pitch = kp_balance * error * sqrt( cos( pitch ) ) + ki_balance * integral + kd_balance * derivative;
 
     pid_pitch = constrain(pid_pitch, -1.0, 1.0);
 
